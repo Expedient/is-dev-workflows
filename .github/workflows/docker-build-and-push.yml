@@ -6,7 +6,7 @@ on:
         required: true
         type: string
       build_args:
-        required: true
+        required: false
         type: string
     secrets:
       IS_DOCKER_HUB_USERNAME:
