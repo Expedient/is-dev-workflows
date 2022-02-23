@@ -1,0 +1,77 @@
+name: Kustomize Deploy Commit
+on:
+  workflow_call:
+    inputs:
+      KUBERNETES_REPO:
+        required: true
+        type: string
+      GITHUB_EMAIL:
+        required: true
+        type: string
+      APPLICATION:
+        required: true
+        type: string
+      CLUSTER_A:
+        required: true
+        type: string
+      CLUSTER_B:
+        required: true
+        type: string
+      ENVIRONMENT:
+        required: true
+        type: string
+      IMAGE_DIGEST:
+        required: true
+        type: string
+    secrets:
+      IS_CICD_GITHUB_ACTION_TOKEN:
+        required: true
+
+jobs:
+  kustomize-deploy-commit:
+    runs-on: ubuntu-20.04
+    name: kustomize-deploy-commit
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.KUBERNETES_REPO }}
+          fetch-depth: 0
+          ref: 'master'
+          token: ${{ secrets.IS_CICD_GITHUB_ACTION_TOKEN }}
+
+      - name: Update kubernetes resources
+        uses: stefanprodan/kube-tools@v1
+
+      - name: Setup git
+        run: |
+          git config --global user.name "github-action-bot"
+          git config --global user.email "${{ inputs.GITHUB_EMAIL }}"
+
+      - name: Update image digest for first cluster
+        run: |
+          cd applications/${{ inputs.APPLICATION }}/kustomize/overlays/instances/${{ inputs.CLUSTER_A }}
+          kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }}
+
+      - name: Update image digest for second cluster
+        run: |
+          cd applications/${{ inputs.APPLICATION }}/kustomize/overlays/instances/${{ inputs.CLUSTER_B }}
+          kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }}
+
+      - name: Update the deployed app version
+        if: ${{ github.event.inputs.version != '' }}
+        uses: mikefarah/yq@v4.18.1
+        with:
+          cmd: yq -i '.spec.template.spec.containers[1].env[0].value = "${{ github.event.inputs.version }}"' applications/${{ inputs.APPLICATION }}/kustomize/overlays/environments/${{ inputs.ENVIRONMENT }}/deployment.yaml
+
+      - name: Git commit the updated image tag
+        # Only commits if there are changes.
+        run: |
+          git add .
+          git update-index --refresh
+          git diff-index --quiet HEAD || git commit -m "Set ${{ inputs.APPLICATION }} ${{ inputs.ENVIRONMENT }} image digest to ${{ inputs.IMAGE_DIGEST }}"
+
+      - name: Git push changes
+        run: |
+          git status
+          git push
