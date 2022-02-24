@@ -3,9 +3,11 @@ on:
   workflow_call:
     inputs:
       KUBERNETES_REPO:
+        description: 'The GitHub repository to deploy to'
         required: true
         type: string
       KUBERNETES_REPO_REF:
+        description: 'The GitHub repository reference to deploy to'
         required: true
         type: string
         default: 'master'
@@ -16,6 +18,7 @@ on:
         required: true
         type: string
       CLUSTERS:
+        description: 'The list of cluster instances to deploy to'
         required: true
         type: string
       ENVIRONMENT:
