@@ -17,6 +17,9 @@ on:
       APPLICATION:
         required: true
         type: string
+    KUSTOMIZE_PATH:
+        type: string
+        default: kustomize/overlays/instances
       CLUSTERS:
         description: 'The list of cluster instances to deploy to'
         required: true
