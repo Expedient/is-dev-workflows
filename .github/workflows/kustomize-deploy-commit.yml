@@ -5,16 +5,17 @@ on:
       KUBERNETES_REPO:
         required: true
         type: string
+      KUBERNETES_REPO_REF:
+        required: true
+        type: string
+        default: 'master'
       GITHUB_EMAIL:
         required: true
         type: string
       APPLICATION:
         required: true
         type: string
-      CLUSTER_A:
-        required: true
-        type: string
-      CLUSTER_B:
+      CLUSTERS:
         required: true
         type: string
       ENVIRONMENT:
@@ -37,7 +38,7 @@ jobs:
         with:
           repository: ${{ inputs.KUBERNETES_REPO }}
           fetch-depth: 0
-          ref: 'master'
+          ref: '${{ inputs.KUBERNETES_REPO_REF }}'
           token: ${{ secrets.IS_CICD_GITHUB_ACTION_TOKEN }}
 
       - name: Update kubernetes resources
@@ -48,15 +49,20 @@ jobs:
           git config --global user.name "github-action-bot"
           git config --global user.email "${{ inputs.GITHUB_EMAIL }}"
 
-      - name: Update image digest for first cluster
+      - name: Update image digest for each cluster
         run: |
-          cd applications/${{ inputs.APPLICATION }}/kustomize/overlays/instances/${{ inputs.CLUSTER_A }}
-          kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }}
-
-      - name: Update image digest for second cluster
-        run: |
-          cd applications/${{ inputs.APPLICATION }}/kustomize/overlays/instances/${{ inputs.CLUSTER_B }}
-          kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }}
+          clusters="${{ inputs.CLUSTERS }}"
+          a=($(echo "$clusters" | tr ',' '\n'))
+          for i in "${a[@]}"
+          do
+            echo "Updating image digest for $i"
+            cd applications/${{ inputs.APPLICATION }}/kustomize/overlays/instances/$i
+            if [ $? -ne 0 ]; then
+            echo "Instance $i not found"
+            exit 1
+            fi
+            kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }}
+          done
 
       - name: Update the deployed app version
         if: ${{ github.event.inputs.version != '' }}
