@@ -3,12 +3,12 @@ on:
   workflow_call:
     inputs:
       KUBERNETES_REPO:
-        description: 'The GitHub repository to deploy to'
         required: true
+        description: 'The GitHub repository to deploy to'
         type: string
       KUBERNETES_REPO_REF:
-        description: 'The GitHub repository reference to deploy to'
         required: false
+        description: 'The GitHub repository reference to deploy to'
         type: string
         default: 'master'
       GITHUB_EMAIL:
@@ -22,8 +22,8 @@ on:
         type: string
         default: kustomize/overlays/instances
       CLUSTERS:
-        description: 'The list of cluster instances to deploy to'
         required: true
+        description: 'The list of cluster instances to deploy to'
         type: string
       ENVIRONMENT:
         required: true
