@@ -25,7 +25,7 @@ on:
         required: true
         type: string
       IMAGE_DIGEST:
-        required: true
+      required: true
         type: string
     secrets:
       IS_CICD_GITHUB_ACTION_TOKEN:
