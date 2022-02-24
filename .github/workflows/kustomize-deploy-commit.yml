@@ -56,12 +56,11 @@ jobs:
           for i in "${a[@]}"
           do
             echo "Updating image digest for $i"
-            cd applications/${{ inputs.APPLICATION }}/kustomize/overlays/instances/$i
+            (set -eux; cd applications/dns-api/kustomize/overlays/instances/$i && kustomize edit set image ${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }})
             if [ $? -ne 0 ]; then
             echo "Instance $i not found"
             exit 1
             fi
-            kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }}
           done
 
       - name: Update the deployed app version
