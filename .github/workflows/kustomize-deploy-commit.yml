@@ -8,7 +8,7 @@ on:
         type: string
       KUBERNETES_REPO_REF:
         description: 'The GitHub repository reference to deploy to'
-        required: true
+        required: false
         type: string
         default: 'master'
       GITHUB_EMAIL:
@@ -17,7 +17,8 @@ on:
       APPLICATION:
         required: true
         type: string
-    KUSTOMIZE_PATH:
+      KUSTOMIZE_PATH:
+        required: false
         type: string
         default: kustomize/overlays/instances
       CLUSTERS:
