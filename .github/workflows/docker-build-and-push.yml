@@ -5,14 +5,13 @@ on:
       tags:
         required: true
         type: string
-      build_args:
-        required: false
-        type: string
     secrets:
       IS_DOCKER_HUB_USERNAME:
         required: true
       IS_DOCKER_HUB_PASSWORD:
         required: true
+      build_args:
+        required: false
     outputs:
       digest:
         description: "The digest of the docker image."
@@ -47,6 +46,6 @@ jobs:
           tags: ${{ inputs.tags }}
           cache-from: type=registry,ref=expedient/cache
           cache-to: type=registry,ref=expedient/cache
-          build-args: ${{ inputs.build_args }}
+          build-args: ${{ secrets.build_args }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
