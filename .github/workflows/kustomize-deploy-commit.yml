@@ -63,7 +63,7 @@ jobs:
           for i in "${a[@]}"
           do
             echo "Updating image digest for $i"
-            (set -eux; cd applications/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image ${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }})
+            (set -eux; cd applications/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }})
             if [ $? -ne 0 ]; then
             echo "Instance $i not found"
             exit 1
