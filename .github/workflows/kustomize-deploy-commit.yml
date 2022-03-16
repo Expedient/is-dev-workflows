@@ -45,7 +45,7 @@ jobs:
         with:
           repository: ${{ inputs.KUBERNETES_REPO }}
           fetch-depth: 0
-          ref: '${{ inputs.KUBERNETES_REPO_REF }}'
+          ref: ${{ inputs.KUBERNETES_REPO_REF }}
           token: ${{ secrets.IS_CICD_GITHUB_ACTION_TOKEN }}
 
       - name: Update kubernetes resources
