@@ -74,7 +74,7 @@ jobs:
         if: ${{ github.event.inputs.version != '' }}
         uses: mikefarah/yq@v4.18.1
         with:
-          cmd: yq -i '.spec.template.spec.containers[1].env[0].value = "${{ github.event.inputs.version }}"' applications/${{ inputs.APPLICATION }}/kustomize/overlays/environments/${{ inputs.ENVIRONMENT }}/deployment.yaml
+          cmd: yq -i '.spec.template.spec.containers[1].env[0].value = "$(date -u +"%Y.%m.%d %H:%M")"' applications/${{ inputs.APPLICATION }}/kustomize/overlays/environments/${{ inputs.ENVIRONMENT }}/deployment.yaml
 
       - name: Git commit the updated image tag
         # Only commits if there are changes.
