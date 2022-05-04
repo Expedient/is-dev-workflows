@@ -72,6 +72,8 @@ jobs:
           cd kubernetes/applications/${{inputs.APPLICATION}}/${{inputs.KUSTOMIZE_PATH}}
           kustomize edit set image expedient/${{inputs.APPLICATION}}@${{inputs.IMAGE_DIGEST}}
           kubectl apply -k .
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
       - name: Wait for deployment to be ready
         run: |
           kubectl rollout status --timeout=5m deploy/${{inputs.APPLICATION}}
