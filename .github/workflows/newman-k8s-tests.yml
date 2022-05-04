@@ -36,7 +36,6 @@ on:
 jobs:
   functional-tests:
     runs-on: ubuntu-20.04
-    needs: ["docker-build"]
     name: Functional Tests
     steps:
       - uses: actions/checkout@master
