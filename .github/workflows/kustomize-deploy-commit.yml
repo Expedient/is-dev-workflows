@@ -31,6 +31,11 @@ on:
       IMAGE_DIGEST:
         required: true
         type: string
+      UPDATE_APP_VERSION:
+        required: false
+        description: 'Update the app version?'
+        type: boolean
+        default: false
     secrets:
       IS_CICD_GITHUB_ACTION_TOKEN:
         required: true
@@ -71,7 +76,7 @@ jobs:
           done
 
       - name: Update the deployed app version
-        if: ${{ github.event.inputs.version != '' }}
+        if: inputs.UPDATE_APP_VERSION == true
         uses: mikefarah/yq@v4.18.1
         with:
           cmd: yq -i '.spec.template.spec.containers[1].env[0].value = "$(date -u +"%Y.%m.%d %H:%M UTC")"' applications/${{ inputs.APPLICATION }}/kustomize/overlays/environments/${{ inputs.ENVIRONMENT }}/deployment.yaml
