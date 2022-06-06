@@ -75,6 +75,10 @@ jobs:
       - name: Wait for deployment to be ready
         run: |
           kubectl rollout status --timeout=5m deploy/${{inputs.APPLICATION}}
+      - name: Print logs if failed deployment
+        if: failure()
+        run: |
+          kubectl logs deploy/${{inputs.APPLICATION}} --all-containers
       - name: Run newman tests
         run: |
           cd ${{inputs.APPLICATION}}
