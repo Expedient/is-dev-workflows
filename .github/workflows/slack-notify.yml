@@ -1,0 +1,30 @@
+name: Slack Notification
+on: 
+  workflow_call:
+    inputs:
+      SLACK_CHANNEL:
+        required: false
+        default: alerts-ci-stage
+        description: 'The slack channel to post the message in'
+        type: string
+      WORKFLOW_RESULT:
+        required: true
+        description: 'The result of the workflow run: failed or succeeded'
+        type: string
+    secrets:
+      SLACK_WEBHOOK:
+        required: true
+jobs:
+  slackNotification:
+    name: Slack Notification
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+      with:
+        SLACK_CHANNEL: ${{ inputs.SLACK_CHANNEL }}
+        SLACK_COLOR: '#ff0000'
+        SLACK_MESSAGE: 'The ${{ github.workflow }} workflow ${{ inputs.WORKFLOW_RESULT }}'
+        SLACK_TITLE: Pipeline ${{ inputs.WORKFLOW_RESULT }}
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
