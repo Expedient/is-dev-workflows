@@ -29,4 +29,4 @@ jobs:
         SLACK_TITLE: Workflow ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed. :(' }}
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         SLACK_USERNAME: Github Actions
-        SLACK_ICON: https://github.com/Expedient.png?size=48
+        SLACK_ICON: https://github.com/github.png?size=48
