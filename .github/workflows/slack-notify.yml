@@ -28,4 +28,5 @@ jobs:
         SLACK_MESSAGE: The ${{ github.repository }} ${{ github.workflow }} workflow ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed.' }}
         SLACK_TITLE: Workflow ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed. :(' }}
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_USERNAME: github actions
+        SLACK_USERNAME: Github Actions
+        SLACK_ICON: https://github.com/Expedient.png?size=48
