@@ -25,6 +25,7 @@ jobs:
       env:
         SLACK_CHANNEL: ${{ inputs.SLACK_CHANNEL }}
         SLACK_COLOR:  ${{ inputs.WORKFLOW_SUCCESS && '#00ff00' || '#ff0000' }}
-        SLACK_MESSAGE: The ${{ github.workflow }} workflow ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed. :(' }}
+        SLACK_MESSAGE: The ${{ github.repository }} ${{ github.workflow }} workflow ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed.' }}
         SLACK_TITLE: Workflow ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed. :(' }}
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_USERNAME: github actions
