@@ -7,10 +7,10 @@ on:
         default: alerts-ci-stage
         description: 'The slack channel to post the message in'
         type: string
-      WORKFLOW_RESULT:
+      WORKFLOW_SUCCESS:
         required: true
         description: 'The result of the workflow run: failed or succeeded'
-        type: string
+        type: boolean
     secrets:
       SLACK_WEBHOOK:
         required: true
@@ -24,7 +24,7 @@ jobs:
       uses: rtCamp/action-slack-notify@v2
       with:
         SLACK_CHANNEL: ${{ inputs.SLACK_CHANNEL }}
-        SLACK_COLOR: '#ff0000'
-        SLACK_MESSAGE: 'The ${{ github.workflow }} workflow ${{ inputs.WORKFLOW_RESULT }}'
-        SLACK_TITLE: Pipeline ${{ inputs.WORKFLOW_RESULT }}
+        SLACK_COLOR:  ${{ inputs.WORKFLOW_SUCCESS && '#00ff00' || '#ff0000' }}
+        SLACK_MESSAGE: The ${{ github.workflow }} workflow ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed. :(' }}
+        SLACK_TITLE: Pipeline ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed. :(' }}
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
