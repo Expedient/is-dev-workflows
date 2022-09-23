@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
-      with:
+      env:
         SLACK_CHANNEL: ${{ inputs.SLACK_CHANNEL }}
         SLACK_COLOR:  ${{ inputs.WORKFLOW_SUCCESS && '#00ff00' || '#ff0000' }}
         SLACK_MESSAGE: The ${{ github.workflow }} workflow ${{ inputs.WORKFLOW_SUCCESS && 'success!' || 'failed. :(' }}
