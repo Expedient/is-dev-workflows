@@ -1,0 +1,59 @@
+linters:
+    # disable-all: true
+    # Uncomment to enable all linters
+    # enable-all: true
+    # disabling linters that are abandoned or replaced with better versions
+    disable:
+        - golint
+        - deadcode
+        - exhaustivestruct
+        - ifshort
+        - interfacer
+        - maligned
+        - nosnakecase 
+        - scopelint
+        - structcheck
+        - varcheck
+    # additional non-default linters that we want to use
+    enable:
+        - gocritic
+        # - goconst
+        # - godox
+        # - goerr113
+        # - gofmt
+        # - gosec
+        # - misspell
+        # - revive
+        # - lll
+        # - nonamedreturns
+        # - varnamelen
+        # linters we wanted to enable but ran into difficulties - may implement in future issue
+        # - gochecknoglobals
+        # - funlen
+        # - ireturn
+# settings for specific linters - these don't appear to be applied
+linters-settings:
+    revive:
+        enable-all-rules: false
+        severity: warning
+        rules:
+            - name: var-naming
+              disabled: true
+            - name: exported
+              disabled: true
+            - name: receiver-naming
+              disabled: true
+    varnamelen:
+      ignore-decls:
+        - c echo.Context
+        - c *gin.Context
+        - t testing.T
+        - f *foo.Bar
+        - e error
+        - i int
+        - id int
+        - const C
+        - T any
+        - m map[string]int
+        - db *gorm.DB
+        - tx *gorm.DB
