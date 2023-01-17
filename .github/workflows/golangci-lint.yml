@@ -6,9 +6,9 @@ on:
         default: 1.17
         type: string
     secrets:
-      GITHUB_USERNAME:
+      IS_GITHUB_USERNAME:
         required: true
-      GITHUB_TOKEN:
+      IS_GITHUB_TOKEN:
         required: true
 permissions:
   contents: read
@@ -23,8 +23,8 @@ jobs:
       - uses: actions/checkout@v3
       - run: |
           RUN echo "machine github.com" > /root/.netrc
-          RUN echo "login ${{ secrets.GITHUB_USERNAME }}" >> /root/.netrc
-          RUN echo "password ${{ secrets.GITHUB_TOKEN }}" >> /root/.netrc
+          RUN echo "login ${{ secrets.IS_GITHUB_USERNAME }}" >> /root/.netrc
+          RUN echo "password ${{ secrets.IS_GITHUB_TOKEN }}" >> /root/.netrc
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
