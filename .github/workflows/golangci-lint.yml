@@ -16,15 +16,20 @@ jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: "github.com/expedient"
     steps:
+      - name: Configure git for private modules
+        env:
+          TOKEN: ${{ secrets.IS_GITHUB_TOKEN }}
+          USERNAME: ${{ secrets.IS_GITHUB_USERNAME }}
+        run: |
+          git config --global url."https://${USERNAME}:${TOKEN}@github.com".insteadOf "https://github.com" && \
+          export GOPRIVATE="github.com/expedient"
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ inputs.GO_VERSION }}
       - uses: actions/checkout@v3
-      - run: |
-          RUN echo "machine github.com" > /root/.netrc
-          RUN echo "login ${{ secrets.IS_GITHUB_USERNAME }}" >> /root/.netrc
-          RUN echo "password ${{ secrets.IS_GITHUB_TOKEN }}" >> /root/.netrc
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
