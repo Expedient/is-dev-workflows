@@ -17,6 +17,11 @@ on:
       APPLICATION:
         required: true
         type: string
+      APPLICATION_TYPE:
+        required: false
+        description: 'The type of application to deploy, e.g. applications, platform'
+        type: string
+        default: 'applications'
       KUSTOMIZE_PATH:
         required: false
         type: string
@@ -63,7 +68,7 @@ jobs:
           for i in "${a[@]}"
           do
             echo "Updating image digest for $i"
-            (set -eux; cd applications/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }})
+            (set -eux; cd ${{ inputs.APPLICATION_TYPE }}/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }})
             if [ $? -ne 0 ]; then
             echo "Instance $i not found"
             exit 1
