@@ -15,8 +15,14 @@ on:
         required: true
         type: string
       APPLICATION:
+        description: 'The name of the application directory where manifests are stored'
         required: true
         type: string
+      APPLICATION_IMAGE:
+        description: 'The name of the application you want the image digest updated for'
+        required: false
+        type: string
+        default: ${{ inputs.APPLICATION }}
       APPLICATION_TYPE:
         required: false
         description: 'The type of application to deploy, e.g. applications, platform'
@@ -68,7 +74,7 @@ jobs:
           for i in "${a[@]}"
           do
             echo "Updating image digest for $i"
-            (set -eux; cd ${{ inputs.APPLICATION_TYPE }}/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image expedient/${{ inputs.APPLICATION }}@${{ inputs.IMAGE_DIGEST }})
+            (set -eux; cd ${{ inputs.APPLICATION_TYPE }}/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image expedient/${{ inputs.APPLICATION_IMAGE }}@${{ inputs.IMAGE_DIGEST }})
             if [ $? -ne 0 ]; then
             echo "Instance $i not found"
             exit 1
