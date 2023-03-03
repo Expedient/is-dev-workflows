@@ -22,7 +22,6 @@ on:
         description: 'The name of the application you want the image digest updated for'
         required: false
         type: string
-        default: ${{ inputs.APPLICATION }}
       APPLICATION_TYPE:
         required: false
         description: 'The type of application to deploy, e.g. applications, platform'
@@ -69,6 +68,9 @@ jobs:
 
       - name: Update image digest for each cluster
         run: |
+          if [ -z "${{ inputs.APPLICATION_IMAGE }}" ]; then
+            APPLICATION_IMAGE="${{ inputs.APPLICATION }}"
+          fi
           clusters="${{ inputs.CLUSTERS }}"
           a=($(echo "$clusters" | tr ',' '\n'))
           for i in "${a[@]}"
