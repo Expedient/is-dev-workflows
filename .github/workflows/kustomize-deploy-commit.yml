@@ -70,13 +70,15 @@ jobs:
         run: |
           if [ -z "${{ inputs.APPLICATION_IMAGE }}" ]; then
             APPLICATION_IMAGE="${{ inputs.APPLICATION }}"
+          else
+            APPLICATION_IMAGE="${{ inputs.APPLICATION_IMAGE }}"
           fi
           clusters="${{ inputs.CLUSTERS }}"
           a=($(echo "$clusters" | tr ',' '\n'))
           for i in "${a[@]}"
           do
             echo "Updating image digest for $i"
-            (set -eux; cd ${{ inputs.APPLICATION_TYPE }}/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image expedient/${{ inputs.APPLICATION_IMAGE }}@${{ inputs.IMAGE_DIGEST }})
+            (set -eux; cd ${{ inputs.APPLICATION_TYPE }}/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image expedient/$APPLICATION_IMAGE@${{ inputs.IMAGE_DIGEST }})
             if [ $? -ne 0 ]; then
             echo "Instance $i not found"
             exit 1
