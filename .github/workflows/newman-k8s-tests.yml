@@ -83,4 +83,4 @@ jobs:
         run: |
           cd ${{inputs.APPLICATION}}
           tar cf - .postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run .postman/${{inputs.APPLICATION}}.postman_collection.json -e .postman/${{inputs.APPLICATION}}.postman_environment.json
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run .postman/${{inputs.APPLICATION}}.postman_collection.json -e .postman/${{inputs.APPLICATION}}.postman_environment.json --verbose
