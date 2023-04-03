@@ -20,5 +20,5 @@ jobs:
       uses: jneate/postman-collection-action@v1
       with:
         postmanApiKey: ${{ secrets.POSTMAN_API_KEY }}
-        postmanWorkspaceId: ${{ inputs.KUBERNETES_REPO }}
+        postmanWorkspaceId: ${{ inputs.POSTMAN_WORKSPACE_ID }}
         postmanTimeout: 30000
