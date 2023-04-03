@@ -1,0 +1,24 @@
+name: Sync Postman Collection
+on: 
+  workflow_call:
+    inputs:
+      POSTMAN_WORKSPACE_ID:
+        required: true
+        description: 'The ID of the Postman workspace to sync to'
+        type: string
+    secrets:
+      POSTMAN_API_KEY:
+        required: true
+jobs:
+  syncPostmanCollection:
+    name: Sync Postman Collection
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Sync
+      uses: jneate/postman-collection-action@v1
+      with:
+        postmanApiKey: ${{ secrets.POSTMAN_API_KEY }}
+        postmanWorkspaceId: ${{ inputs.KUBERNETES_REPO }}
+        postmanTimeout: 30000
