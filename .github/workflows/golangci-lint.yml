@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       GO_VERSION:
-        default: 1.17
+        default: 1.20
         type: string
     secrets:
       IS_GITHUB_USERNAME:
@@ -33,4 +33,4 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.50.1
+          version: v1.52.1
