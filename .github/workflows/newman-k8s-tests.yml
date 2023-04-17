@@ -38,10 +38,10 @@ jobs:
     runs-on: ubuntu-20.04
     name: Functional Tests
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
         with:
           path: ${{inputs.APPLICATION}}
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
         with:
           repository: ${{inputs.KUBERNETES_REPO}}
           ref: ${{inputs.KUBERNETES_REPO_REF}}
