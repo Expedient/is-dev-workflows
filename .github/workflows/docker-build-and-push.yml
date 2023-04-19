@@ -44,9 +44,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ inputs.tags }}
-          # cache-from: type=registry,ref=expedient/cache
-          # cache-to: type=registry,ref=expedient/cache
-          no-cache: true
+          cache-from: type=registry,ref=expedient/cache
+          cache-to: type=registry,ref=expedient/cache
           build-args: ${{ secrets.build_args }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
