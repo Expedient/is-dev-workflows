@@ -25,6 +25,11 @@ on:
         required: true
         description: 'The digest of the image you want to run tests on.'
         type: string
+      TEST_SUFFIX:
+        required: false
+        description: 'The suffix of the postman test file to run.'
+        type: string
+        default: ''
     secrets:
       IS_CICD_GITHUB_ACTION_TOKEN:
         required: true
@@ -82,5 +87,5 @@ jobs:
       - name: Run newman tests
         run: |
           cd ${{inputs.APPLICATION}}
-          tar cf - .postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run .postman/${{inputs.APPLICATION}}.postman_collection.json -e .postman/${{inputs.APPLICATION}}.postman_environment.json --verbose
+          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run postman/${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/${{inputs.APPLICATION}}.postman_environment.json --verbose
