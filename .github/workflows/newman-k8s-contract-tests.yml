@@ -86,6 +86,6 @@ jobs:
           kubectl logs deploy/${{inputs.APPLICATION}} --all-containers
       - name: Run contract tests
         run: |
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run docs/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
           cd ${{inputs.APPLICATION}}
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run docs/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
