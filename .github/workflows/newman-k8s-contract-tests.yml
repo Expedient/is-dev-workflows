@@ -41,7 +41,7 @@ on:
 jobs:
   contract-tests:
     runs-on: ubuntu-20.04
-    name: Functional Tests
+    name: Contract Tests
     steps:
       - uses: actions/checkout@v3
         with:
@@ -88,5 +88,5 @@ jobs:
         run: |
           cd ${{inputs.APPLICATION}}
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          cd ../
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run docs/contract-tests.json --folder 'Contract Tests' -e postman/${{inputs.APPLICATION}}.postman_environment.json --verbose
+          tar cf - docs/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run docs/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
