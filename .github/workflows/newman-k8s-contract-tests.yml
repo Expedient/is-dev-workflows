@@ -84,9 +84,8 @@ jobs:
         if: failure()
         run: |
           kubectl logs deploy/${{inputs.APPLICATION}} --all-containers
-      - name: Run newman tests
+      - name: Run contract tests
         run: |
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run docs/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
           cd ${{inputs.APPLICATION}}
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run postman/collections/${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
-          
