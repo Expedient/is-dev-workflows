@@ -39,7 +39,7 @@ on:
         required: true
 
 jobs:
-  functional-tests:
+  contract-tests:
     runs-on: ubuntu-20.04
     name: Functional Tests
     steps:
