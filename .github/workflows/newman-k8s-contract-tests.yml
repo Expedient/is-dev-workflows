@@ -11,7 +11,7 @@ on:
         required: false
         description: 'The GitHub repository reference to deploy to'
         type: string
-        default: 'master'
+        default: 'dev-3671-contract-tests'
       APPLICATION:
         required: true
         description: 'The name of the application should match the github repo name, the k8s repo directory, the dockerhub repo name, and the name of the postman files.'
@@ -90,6 +90,5 @@ jobs:
         run: |
           cd ${{inputs.APPLICATION}}
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl cp deploy/${{inputs.APPLICATION}}:/path/to/hopper/docs ./docs -c hopper
           tar cf - docs/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run docs/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run contract-tests/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
