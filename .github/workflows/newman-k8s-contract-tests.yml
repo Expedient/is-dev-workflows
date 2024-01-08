@@ -89,14 +89,7 @@ jobs:
       - name: Run contract tests
         run: |
           cd ${{inputs.APPLICATION}}
-          # compile openapi docs
-          npm install -g multi-file-swagger
-          multi-file-swagger base.yaml > docs/openapi.json
-
-          # generate contract tests
-          npm i -g @apideck/portman
-          portman --cliOptionsFile docs/portman-cli-options.json
-
+          curl -o contract-tests.json localhost:8080/v3/contract-tests
+          tar cf - contract-tests.json | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          tar cf - docs/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run contract-tests/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
