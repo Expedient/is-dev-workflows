@@ -11,7 +11,7 @@ on:
         required: false
         description: 'The GitHub repository reference to deploy to'
         type: string
-        default: 'dev-3671-contract-tests'
+        default: 'master'
       APPLICATION:
         required: true
         description: 'The name of the application should match the github repo name, the k8s repo directory, the dockerhub repo name, and the name of the postman files.'
@@ -89,6 +89,14 @@ jobs:
       - name: Run contract tests
         run: |
           cd ${{inputs.APPLICATION}}
+          # compile openapi docs
+          npm install -g multi-file-swagger
+          multi-file-swagger base.yaml > docs/openapi.json
+
+          # generate contract tests
+          npm i -g @apideck/portman
+          portman --cliOptionsFile docs/portman-cli-options.json
+
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
           tar cf - docs/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
           kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run contract-tests/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
