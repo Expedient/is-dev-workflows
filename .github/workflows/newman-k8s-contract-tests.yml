@@ -87,7 +87,7 @@ jobs:
       - name: Run contract tests
         run: |
           cd ${{inputs.APPLICATION}}
-          curl -o contract-tests.json localhost:8080/v3/contract-tests
+          curl -o contract-tests.json http://${{inputs.APPLICATION}}:8080/contract-tests
           tar cf - contract-tests.json | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
           kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
