@@ -84,8 +84,6 @@ jobs:
         if: failure()
         run: |
           kubectl logs deploy/${{inputs.APPLICATION}} --all-containers
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
       - name: Run contract tests
         run: |
           cd ${{inputs.APPLICATION}}
