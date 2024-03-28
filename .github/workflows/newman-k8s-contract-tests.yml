@@ -79,7 +79,7 @@ jobs:
           kubectl apply -k .
       - name: Wait for deployment to be ready
         run: |
-          kubectl rollout status --timeout=5m deploy/${{inputs.APPLICATION}}
+          kubectl rollout status --timeout=5m deploy/${{inputs.APPLICATION}} -v4
       - name: Print logs if failed deployment
         if: failure()
         run: |
