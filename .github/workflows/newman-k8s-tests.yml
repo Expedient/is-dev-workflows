@@ -61,7 +61,7 @@ jobs:
       - name: Update kubectl
         run: |
           curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl
-          sudo install -o root -g root -m 0755 kubectl /opt/hostedtoolcache/kind/v0.11.1/x86_64/kubectl/bin//kubectl
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
       - name: Set default namespace
         run: |
           kubectl config set-context --current --namespace=default
