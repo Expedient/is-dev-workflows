@@ -11,7 +11,7 @@ on:
         required: false
         description: 'The GitHub repository reference to deploy to'
         type: string
-        default: 'dev-4351-remove-servicemonitor-from-ci'
+        default: 'db39ff8a50d33a9624abd9662f02848aa0c56303'
       APPLICATION:
         required: true
         description: 'The name of the application should match the github repo name, the k8s repo directory, the dockerhub repo name, and the name of the postman files.'
