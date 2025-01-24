@@ -2,6 +2,11 @@ name: PR Validation
 on:
   workflow_call:
     inputs:
+      ENABLE_DEBUG_ON_FAILURE:
+        required: false
+        default: false
+        description: 'Enable SSH debugging session via upterm when tests fail'
+        type: boolean
       KUBERNETES_REPO:
         required: false
         default: expedient/kubernetes
@@ -84,6 +89,11 @@ jobs:
         if: failure()
         run: |
           kubectl logs deploy/${{inputs.APPLICATION}} --all-containers
+      - name: Setup debug session on failure
+        uses: lhotari/action-upterm@v1
+        if: failure() && inputs.ENABLE_DEBUG_ON_FAILURE
+        with:
+          wait-timeout-minutes: 5
       - name: Run newman tests
         run: |
           cd ${{inputs.APPLICATION}}
