@@ -25,7 +25,7 @@ on:
 jobs:
   build-and-push:
     name: Build and Push
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     outputs:
       digest: ${{ steps.docker_build.outputs.digest }}
     steps:
