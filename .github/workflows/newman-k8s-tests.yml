@@ -35,6 +35,11 @@ on:
         description: 'The suffix of the postman test file to run.'
         type: string
         default: ''
+      TEST_ENV_SUFFIX:
+        required: false
+        description: 'The suffix of the postman environment file to run.'
+        type: string
+        default: ''
     secrets:
       IS_CICD_GITHUB_ACTION_TOKEN:
         required: true
@@ -98,5 +103,5 @@ jobs:
         run: |
           cd ${{inputs.APPLICATION}}
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run postman/collections/${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run postman/collections/${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}.postman_environment.json --verbose
           
