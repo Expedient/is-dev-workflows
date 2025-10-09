@@ -26,18 +26,23 @@ on:
         description: 'The path in the k8s repo directory to the kustomization.yaml file to deploy from.'
         type: string
         default: kustomize/overlays/environments/ci
-      KUSTOMIZE_APPLICATION_OVERWRITE:
-        required: false
-        description: 'Overwrites the application that the kustomize path is found under'
-        type: string
-        default: ""
       IMAGE_DIGEST:
         required: true
         description: 'The digest of the image you want to run tests on.'
         type: string
+      TEST_PREFIX:
+        required: false
+        description: 'The prefix of the postman test file to run.'
+        type: string
+        default: ''
       TEST_SUFFIX:
         required: false
         description: 'The suffix of the postman test file to run.'
+        type: string
+        default: ''
+      TEST_ENV_PREFIX:
+        required: false
+        description: 'The prefix of the postman environment file to run.'
         type: string
         default: ''
       TEST_ENV_SUFFIX:
@@ -89,11 +94,7 @@ jobs:
             --docker-email=information-systems@expedient.com
       - name: Set image on manifests and apply to KinD
         run: |
-          APP_NAME="${{ inputs.KUSTOMIZE_APPLICATION_OVERWRITE }}"
-          if [ -z "$APP_NAME" ]; then
-            APP_NAME="${{ inputs.APPLICATION }}"
-          fi
-          cd kubernetes/applications/$APP_NAME/${{inputs.KUSTOMIZE_PATH}}
+          cd kubernetes/applications/${{inputs.APPLICATION}}/${{inputs.KUSTOMIZE_PATH}}
           kustomize edit set image expedient/${{inputs.APPLICATION}}@${{inputs.IMAGE_DIGEST}}
           kubectl apply -k .
       - name: Wait for deployment to be ready
@@ -110,7 +111,7 @@ jobs:
           wait-timeout-minutes: 5
       - name: Run newman tests
         run: |
-          cd ${{inputs.APPLICATION}}
-          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run postman/collections/${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}.postman_environment.json --verbose
+          cd $APP_NAME
+          tar cf - postman/ | kubectl exec -i deploy/$APP_NAME -c newman -- tar xf - -C /etc/newman
+          kubectl exec deploy/$APP_NAME -c newman -- newman run postman/collections/${{inputs.TEST_PREFIX}}$${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}.postman_environment.json --verbose
           
