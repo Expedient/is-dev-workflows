@@ -111,7 +111,7 @@ jobs:
           wait-timeout-minutes: 5
       - name: Run newman tests
         run: |
-          cd $APP_NAME
-          tar cf - postman/ | kubectl exec -i deploy/$APP_NAME -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/$APP_NAME -c newman -- newman run postman/collections/${{inputs.TEST_PREFIX}}$${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}.postman_environment.json --verbose
+          cd ${{inputs.APPLICATION}}
+          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run postman/collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}.postman_environment.json --verbose
           
