@@ -25,7 +25,7 @@ on:
         required: false
         description: 'The path in the k8s repo directory to the kustomization.yaml file to deploy from.'
         type: string
-        default: kustomize/overlays/environments/ci
+        default: ${{inputs.APPLICATION}}/kustomize/overlays/environments/ci
       IMAGE_DIGEST:
         required: true
         description: 'The digest of the image you want to run tests on.'
@@ -84,7 +84,7 @@ jobs:
             --docker-email=information-systems@expedient.com
       - name: Set image on manifests and apply to KinD
         run: |
-          cd kubernetes/applications/${{inputs.APPLICATION}}/${{inputs.KUSTOMIZE_PATH}}
+          cd kubernetes/applications/${{inputs.KUSTOMIZE_PATH}}
           kustomize edit set image expedient/${{inputs.APPLICATION}}@${{inputs.IMAGE_DIGEST}}
           kubectl apply -k .
       - name: Wait for deployment to be ready
