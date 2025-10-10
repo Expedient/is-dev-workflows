@@ -99,15 +99,15 @@ jobs:
       - name: Set image on manifests and apply to KinD
         run: |
           cd kubernetes/applications/${{inputs.APPLICATION}}/${{inputs.KUSTOMIZE_PATH}}
-          kustomize edit set image expedient/${{inputs.APPLICATION}}@${{inputs.IMAGE_DIGEST}}
+          kustomize edit set image expedient/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}}@${{inputs.IMAGE_DIGEST}}
           kubectl apply -k .
       - name: Wait for deployment to be ready
         run: |
-          kubectl rollout status --timeout=5m deploy/${{inputs.APPLICATION}}
+          kubectl rollout status --timeout=5m deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}}
       - name: Print logs if failed deployment
         if: failure()
         run: |
-          kubectl logs deploy/${{inputs.APPLICATION}} --all-containers
+          kubectl logs deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} --all-containers
       - name: Setup debug session on failure
         uses: lhotari/action-upterm@v1
         if: failure() && inputs.ENABLE_DEBUG_ON_FAILURE
