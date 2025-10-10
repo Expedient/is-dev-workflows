@@ -99,7 +99,7 @@ jobs:
       - name: Set image on manifests and apply to KinD
         run: |
           cd kubernetes/applications/${{inputs.APPLICATION}}/${{inputs.KUSTOMIZE_PATH}}
-          kustomize edit set image expedient/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}}@${{inputs.IMAGE_DIGEST}}
+          kustomize edit set image expedient/${{inputs.APPLICATION}}@${{inputs.IMAGE_DIGEST}}
           kubectl apply -k .
       - name: Wait for deployment to be ready
         run: |
