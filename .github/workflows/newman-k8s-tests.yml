@@ -17,6 +17,10 @@ on:
         description: 'The GitHub repository reference to deploy to'
         type: string
         default: 'master'
+      APPLICATION_PREFIX:
+        required: false
+        description: 'Prefix appended to the application name'
+        type: string
       APPLICATION:
         required: true
         description: 'The name of the application should match the github repo name, the k8s repo directory, the dockerhub repo name, and the name of the postman files.'
@@ -112,6 +116,6 @@ jobs:
       - name: Run newman tests
         run: |
           cd ${{inputs.APPLICATION}}
-          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run postman/collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}.postman_environment.json --verbose
+          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
+          kubectl exec deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c newman -- newman run postman/collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}.postman_collection.json -e postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}.postman_environment.json --verbose
           
