@@ -10,6 +10,11 @@ on:
         required: false
         default: "true"
         type: string
+      registry:
+        description: "The docker registry to push the image to"
+        required: false
+        default: "docker.io"
+        type: string
     secrets:
       IS_DOCKER_HUB_USERNAME:
         required: true
