@@ -91,10 +91,10 @@ jobs:
           kubectl config set-context --current --namespace=default
       - name: Create docker-registry secret
         run: |
-          kubectl create secret docker-registry regcred \
-            --docker-server=https://index.docker.io/v1/ \
-            --docker-username=${{ secrets.IS_DOCKER_HUB_USERNAME }} \
-            --docker-password=${{ secrets.IS_DOCKER_HUB_PASSWORD }} \
+          kubectl create secret docker-registry gh-regcred \
+            --docker-server=ghcr.io \
+            --docker-username=expedient-is-dev \
+            --docker-password=${{ secrets.IS_CICD_GITHUB_ACTION_TOKEN }} \
             --docker-email=information-systems@expedient.com
       - name: Set image on manifests and apply to KinD
         run: |
