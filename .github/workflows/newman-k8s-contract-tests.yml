@@ -78,7 +78,7 @@ jobs:
       - name: Create docker-registry secret
         run: |
           kubectl create secret docker-registry regcred \
-            --docker-server=${{ inputs.DOCEKR_SERVER }} \
+            --docker-server=${{ inputs.DOCKER_SERVER }} \
             --docker-username=${{ secrets.IS_DOCKER_HUB_USERNAME }} \
             --docker-password=${{ secrets.IS_DOCKER_HUB_PASSWORD }} \
             --docker-email=information-systems@expedient.com
