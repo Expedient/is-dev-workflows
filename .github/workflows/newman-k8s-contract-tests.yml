@@ -43,9 +43,9 @@ on:
     secrets:
       IS_CICD_GITHUB_ACTION_TOKEN:
         required: true
-      IMAGE_REGISTRY_USERNAME:
+      IS_DOCKER_HUB_USERNAME:
         required: true
-      IMAGE_REGISTRY_PASSWORD:
+      IS_DOCKER_HUB_PASSWORD:
         required: true
 
 jobs:
@@ -79,8 +79,8 @@ jobs:
         run: |
           kubectl create secret docker-registry regcred \
             --docker-server=${{ inputs.DOCKER_SERVER }} \
-            --docker-username=${{ secrets.IMAGE_REGISTRY_USERNAME }} \
-            --docker-password=${{ secrets.IMAGE_REGISTRY_PASSWORD }} \
+            --docker-username=${{ secrets.IS_DOCKER_HUB_USERNAME }} \
+            --docker-password=${{ secrets.IS_DOCKER_HUB_PASSWORD }} \
             --docker-email=information-systems@expedient.com
       - name: Set image on manifests and apply to KinD
         run: |
