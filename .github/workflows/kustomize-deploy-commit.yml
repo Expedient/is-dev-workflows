@@ -41,6 +41,10 @@ on:
       IMAGE_DIGEST:
         required: true
         type: string
+      REGISTRY:
+        required: false
+        default: ""
+        type: string
     secrets:
       IS_CICD_GITHUB_ACTION_TOKEN:
         required: true
@@ -78,7 +82,7 @@ jobs:
           for i in "${a[@]}"
           do
             echo "Updating image digest for $i"
-            (set -eux; cd ${{ inputs.APPLICATION_TYPE }}/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image expedient/$APPLICATION_IMAGE@${{ inputs.IMAGE_DIGEST }})
+            (set -eux; cd ${{ inputs.APPLICATION_TYPE }}/${{ inputs.APPLICATION }}/${{ inputs.KUSTOMIZE_PATH }}/$i && kustomize edit set image ${{inputs.REGISTRY}}expedient/$APPLICATION_IMAGE@${{ inputs.IMAGE_DIGEST }})
             if [ $? -ne 0 ]; then
             echo "Instance $i not found"
             exit 1
