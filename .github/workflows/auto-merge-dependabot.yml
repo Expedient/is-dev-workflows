@@ -1,0 +1,70 @@
+name: Auto-merge Dependabot PR
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        description: 'Pull request number to merge'
+        required: true
+        type: number
+      pr_title:
+        description: 'Pull request title for commit message'
+        required: true
+        type: string
+    secrets:
+      github_token:
+        description: 'GitHub token with PR merge permissions'
+        required: true
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if all jobs succeeded
+        run: |
+          echo "All required checks have passed for Dependabot PR #${{ inputs.pr_number }}"
+          echo "PR Title: ${{ inputs.pr_title }}"
+          
+      - name: Approve PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.github_token }}
+          script: |
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ inputs.pr_number }},
+              event: 'APPROVE',
+              body: '✅ Auto-approved by PR validation workflow - all checks passed!'
+            });
+            console.log('PR approved successfully');
+            
+      - name: Merge PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.github_token }}
+          script: |
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ inputs.pr_number }},
+              commit_title: `Auto-merge: ${{ inputs.pr_title }}`,
+              commit_message: 'Automatically merged Dependabot PR after all validation checks passed',
+              merge_method: 'squash'
+            });
+            console.log('PR merged successfully');
+            
+      - name: Comment on merged PR
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.github_token }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ inputs.pr_number }},
+              body: '🤖 **Automatically merged by PR Validation workflow**\n\n' +
+                    '✅ All validation checks passed\n' +
+                    'PR was automatically approved and merged.'
+            });
