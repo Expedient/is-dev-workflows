@@ -3,16 +3,16 @@ name: Auto-merge Dependabot PR
 on:
   workflow_call:
     inputs:
-      pr_number:
+      NUMBER:
         description: 'Pull request number to merge'
         required: true
         type: number
-      pr_title:
+      TITLE:
         description: 'Pull request title for commit message'
         required: true
         type: string
     secrets:
-      github_token:
+      IS_CICD_GITHUB_ACTION_TOKEN:
         description: 'GitHub token with PR merge permissions'
         required: true
 
