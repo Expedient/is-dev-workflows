@@ -22,18 +22,18 @@ jobs:
     steps:
       - name: Check if all jobs succeeded
         run: |
-          echo "All required checks have passed for Dependabot PR #${{ inputs.pr_number }}"
-          echo "PR Title: ${{ inputs.pr_title }}"
+          echo "All required checks have passed for Dependabot PR #${{ inputs.NUMBER }}"
+          echo "PR Title: ${{ inputs.TITLE }}"
           
       - name: Approve PR
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.github_token }}
+          github-token: ${{ secrets.IS_CICD_GITHUB_ACTION_TOKEN }}
           script: |
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: ${{ inputs.pr_number }},
+              pull_number: ${{ inputs.NUMBER }},
               event: 'APPROVE',
               body: '✅ Auto-approved by PR validation workflow - all checks passed!'
             });
@@ -42,13 +42,13 @@ jobs:
       - name: Merge PR
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.github_token }}
+          github-token: ${{ secrets.IS_CICD_GITHUB_ACTION_TOKEN }}
           script: |
             await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: ${{ inputs.pr_number }},
-              commit_title: `Auto-merge: ${{ inputs.pr_title }}`,
+              pull_number: ${{ inputs.NUMBER }},
+              commit_title: `Auto-merge: ${{ inputs.TITLE }}`,
               commit_message: 'Automatically merged Dependabot PR after all validation checks passed',
               merge_method: 'squash'
             });
@@ -58,12 +58,12 @@ jobs:
         if: success()
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.github_token }}
+          github-token: ${{ secrets.IS_CICD_GITHUB_ACTION_TOKEN }}
           script: |
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ inputs.pr_number }},
+              issue_number: ${{ inputs.NUMBER }},
               body: '🤖 **Automatically merged by PR Validation workflow**\n\n' +
                     '✅ All validation checks passed\n' +
                     'PR was automatically approved and merged.'
