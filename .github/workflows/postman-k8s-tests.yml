@@ -136,6 +136,6 @@ jobs:
       - name: Run postman tests
         run: |
           cd ${{inputs.APPLICATION}}
-          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c postman -- tar xf - -C /etc/postman
+          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c postman -- sh -c 'mkdir -p /etc/postman && tar xf - -C /etc/postman'
           kubectl exec deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c postman -- sh -c 'cd /etc/postman && postman collection run postman/collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}${{inputs.TEST_COLLECTION_EXTENSION}} -e postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}${{inputs.TEST_ENVIRONMENT_EXTENSION}}'
           
