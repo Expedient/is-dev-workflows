@@ -45,6 +45,11 @@ on:
         description: 'Used when setting the image in the kustomization file.'
         default: ""
         type: string
+      TEST_ENVIRONMENT_EXTENSION:
+        required: false
+        description: 'The file extension of the postman environment to run.'
+        type: string
+        default: .postman_environment.json
     secrets:
       IS_CICD_GITHUB_ACTION_TOKEN:
         required: true
@@ -109,4 +114,4 @@ jobs:
           cd ${{inputs.APPLICATION}}
           kubectl exec deploy/${{inputs.APPLICATION}} -c test-fetcher -- wget -O /contract-tests/contract-tests.json http://localhost:8080/contract-tests
           tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c newman -- tar xf - -C /etc/newman
-          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run /contract-tests/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.postman_environment.json --verbose
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- newman run /contract-tests/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}${{inputs.TEST_ENVIRONMENT_EXTENSION}} --verbose
