@@ -1,0 +1,141 @@
+name: PR Validation
+on:
+  workflow_call:
+    inputs:
+      ENABLE_DEBUG_ON_FAILURE:
+        required: false
+        default: false
+        description: 'Enable SSH debugging session via upterm when tests fail'
+        type: boolean
+      KUBERNETES_REPO:
+        required: false
+        default: expedient/kubernetes
+        description: 'The GitHub repository to deploy to'
+        type: string
+      KUBERNETES_REPO_REF:
+        required: false
+        description: 'The GitHub repository reference to deploy to'
+        type: string
+        default: 'master'
+      APPLICATION_PREFIX:
+        required: false
+        description: 'Prefix appended to the application name'
+        type: string
+      APPLICATION:
+        required: true
+        description: 'The name of the application should match the github repo name, the k8s repo directory, the dockerhub repo name, and the name of the postman files.'
+        type: string
+      KUSTOMIZE_PATH:
+        required: false
+        description: 'The path in the k8s repo directory to the kustomization.yaml file to deploy from.'
+        type: string
+        default: kustomize/overlays/environments/ci
+      IMAGE_DIGEST:
+        required: true
+        description: 'The digest of the image you want to run tests on.'
+        type: string
+      TEST_PREFIX:
+        required: false
+        description: 'The prefix of the postman test file to run.'
+        type: string
+        default: ''
+      TEST_SUFFIX:
+        required: false
+        description: 'The suffix of the postman test file to run.'
+        type: string
+        default: ''
+      TEST_ENV_PREFIX:
+        required: false
+        description: 'The prefix of the postman environment file to run.'
+        type: string
+        default: ''
+      TEST_ENV_SUFFIX:
+        required: false
+        description: 'The suffix of the postman environment file to run.'
+        type: string
+        default: ''
+      DOCKER_SERVER:
+        required: false
+        description: 'The docker registry server to pull the image from.'
+        type: string
+        default: https://index.docker.io/v1/
+      IMAGE_PREFIX:
+        required: false
+        description: 'Used when setting the image in the kustomization file.'
+        default: ""
+        type: string
+      TEST_COLLECTION_EXTENSION:
+        required: false
+        description: 'The file extension of the postman collection to run.'
+        type: string
+        default: .postman_collection.json
+      TEST_ENVIRONMENT_EXTENSION:
+        required: false
+        description: 'The file extension of the postman environment to run.'
+        type: string
+        default: .postman_environment.json
+    secrets:
+      IS_CICD_GITHUB_ACTION_TOKEN:
+        required: true
+      IS_DOCKER_HUB_USERNAME:
+        required: true
+      IS_DOCKER_HUB_PASSWORD:
+        required: true
+
+jobs:
+  functional-tests:
+    runs-on: ubuntu-24.04
+    name: Functional Tests
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: ${{inputs.APPLICATION}}
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{inputs.KUBERNETES_REPO}}
+          ref: ${{inputs.KUBERNETES_REPO_REF}}
+          token: ${{secrets.IS_CICD_GITHUB_ACTION_TOKEN}}
+          path: kubernetes
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.9.0
+      - name: Check kind
+        run: |
+          kubectl cluster-info
+          kubectl get pods -n kube-system
+      - name: Update kubectl
+        run: |
+          curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      - name: Set default namespace
+        run: |
+          kubectl config set-context --current --namespace=default
+      - name: Create docker-registry secret
+        run: |
+          kubectl create secret docker-registry regcred \
+            --docker-server=${{ inputs.DOCKER_SERVER }} \
+            --docker-username=${{ secrets.IS_DOCKER_HUB_USERNAME }} \
+            --docker-password=${{ secrets.IS_DOCKER_HUB_PASSWORD }} \
+            --docker-email=information-systems@expedient.com
+      - name: Set image on manifests and apply to KinD
+        run: |
+          cd kubernetes/applications/${{inputs.APPLICATION}}/${{inputs.KUSTOMIZE_PATH}}
+          kustomize edit set image ${{ inputs.IMAGE_PREFIX }}expedient/${{inputs.APPLICATION}}@${{inputs.IMAGE_DIGEST}}
+          kubectl apply -k .
+      - name: Wait for deployment to be ready
+        run: |
+          kubectl rollout status --timeout=5m deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}}
+      - name: Print logs if failed deployment
+        if: failure()
+        run: |
+          kubectl logs deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} --all-containers
+      - name: Setup debug session on failure
+        uses: lhotari/action-upterm@v1
+        if: failure() && inputs.ENABLE_DEBUG_ON_FAILURE
+        with:
+          wait-timeout-minutes: 5
+      - name: Run postman tests
+        run: |
+          cd ${{inputs.APPLICATION}}
+          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c postman -- tar xf - -C /etc/postman
+          kubectl exec deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c postman -- sh -c 'cd /etc/postman && postman collection run postman/collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}${{inputs.TEST_COLLECTION_EXTENSION}} -e postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}${{inputs.TEST_ENVIRONMENT_EXTENSION}}'
+          
