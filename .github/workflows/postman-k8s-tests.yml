@@ -76,7 +76,7 @@ on:
         default: .postman_environment.json
       PORT:
         required: false
-        description: 'The port of the application service to port-forward for test execution.'
+        description: 'The port of the application service to port-forward for test execution. (Unused; kept for backward compatibility.)'
         type: number
         default: 8080
     secrets:
@@ -138,17 +138,31 @@ jobs:
         if: failure() && inputs.ENABLE_DEBUG_ON_FAILURE
         with:
           wait-timeout-minutes: 5
-      - name: Install Postman CLI
+      - name: Build Postman collection
         run: |
-          curl -o- "https://dl-cli.pstmn.io/install/unix.sh" | sh
-          echo "$HOME/.postman/bin" >> $GITHUB_PATH
-      - name: Run postman tests
+          cd ${{inputs.APPLICATION}}/postman/scripts
+          npm install
+          node build-collection.mjs \
+            "../collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}${{inputs.TEST_COLLECTION_EXTENSION}}" \
+            /tmp/collection.json
+          node build-environment.mjs \
+            "../environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}${{inputs.TEST_ENVIRONMENT_EXTENSION}}" \
+            /tmp/environment.json
+      - name: Run Newman tests
         run: |
-          kubectl port-forward deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} ${{inputs.PORT}}:${{inputs.PORT}} &
+          # Pipe test files into the Newman sidecar container
+          cat /tmp/collection.json | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c newman -- sh -c 'cat > /tmp/collection.json'
+          cat /tmp/environment.json | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c newman -- sh -c 'cat > /tmp/environment.json'
+
+          # For aux tests the Newman sidecar is in the aux-hopper pod, not the main hopper pod.
+          # Override hopperUrl so it resolves via the Kubernetes service DNS name.
+          HOPPER_OVERRIDE=""
           if [ -n "${{inputs.APPLICATION_PREFIX}}" ]; then
-            kubectl port-forward deploy/${{inputs.APPLICATION}} 8080:8080 &
+            HOPPER_OVERRIDE="--env-var hopperUrl=http://hopper:8080/v3"
           fi
-          sleep 3
-          cd ${{inputs.APPLICATION}}
-          postman collection run "postman/collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}${{inputs.TEST_COLLECTION_EXTENSION}}" -e "postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}${{inputs.TEST_ENVIRONMENT_EXTENSION}}"
-          
+
+          kubectl exec deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c newman -- \
+            newman run /tmp/collection.json \
+              -e /tmp/environment.json \
+              $HOPPER_OVERRIDE \
+              --verbose
