@@ -74,6 +74,11 @@ on:
         description: 'The file extension of the postman environment to run.'
         type: string
         default: .postman_environment.json
+      PORT:
+        required: false
+        description: 'The port of the application service to port-forward for test execution.'
+        type: number
+        default: 8080
     secrets:
       IS_CICD_GITHUB_ACTION_TOKEN:
         required: true
@@ -133,9 +138,17 @@ jobs:
         if: failure() && inputs.ENABLE_DEBUG_ON_FAILURE
         with:
           wait-timeout-minutes: 5
+      - name: Install Postman CLI
+        run: |
+          curl -o- "https://dl-cli.pstmn.io/install/unix.sh" | sh
+          echo "$HOME/.postman/bin" >> $GITHUB_PATH
       - name: Run postman tests
         run: |
+          kubectl port-forward deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} ${{inputs.PORT}}:${{inputs.PORT}} &
+          if [ -n "${{inputs.APPLICATION_PREFIX}}" ]; then
+            kubectl port-forward deploy/${{inputs.APPLICATION}} 8080:8080 &
+          fi
+          sleep 3
           cd ${{inputs.APPLICATION}}
-          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c postman -- sh -c 'mkdir -p /etc/postman && tar xf - -C /etc/postman'
-          kubectl exec deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c postman -- sh -c 'cd /etc/postman && NODE_OPTIONS=--max-old-space-size=4096 postman collection run postman/collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}${{inputs.TEST_COLLECTION_EXTENSION}} -e postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}${{inputs.TEST_ENVIRONMENT_EXTENSION}}'
+          postman collection run "postman/collections/${{inputs.TEST_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_SUFFIX}}${{inputs.TEST_COLLECTION_EXTENSION}}" -e "postman/environments/${{inputs.TEST_ENV_PREFIX}}${{inputs.APPLICATION}}${{inputs.TEST_ENV_SUFFIX}}${{inputs.TEST_ENVIRONMENT_EXTENSION}}"
           
