@@ -165,6 +165,11 @@ jobs:
           kubectl cp /tmp/collection.json ${POD}:/tmp/collection.json -c newman
           kubectl cp /tmp/environment.json ${POD}:/tmp/environment.json -c newman
 
+          # Stage test fixture files used by file-upload requests (formdata bodies).
+          find ${{inputs.APPLICATION}}/postman/collections -maxdepth 1 -type f ! -name "*.yaml" | while read f; do
+            kubectl cp "$f" ${POD}:/tmp/$(basename "$f") -c newman
+          done
+
           # For aux tests the Newman sidecar is in the aux-hopper pod.
           # Override hopperUrl so it resolves via the Kubernetes service DNS name.
           HOPPER_OVERRIDE=""
