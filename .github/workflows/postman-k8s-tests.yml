@@ -150,9 +150,13 @@ jobs:
             /tmp/environment.json
       - name: Run Newman tests
         run: |
-          # Pipe test files into the Newman sidecar container
-          cat /tmp/collection.json | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c newman -- sh -c 'cat > /tmp/collection.json'
-          cat /tmp/environment.json | kubectl exec -i deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c newman -- sh -c 'cat > /tmp/environment.json'
+          DEPLOY="${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}}"
+          POD=$(kubectl get pod -l app=${DEPLOY} -o jsonpath='{.items[0].metadata.name}')
+
+          # Copy test files into the Newman sidecar container using kubectl cp
+          # (avoids the ~32KB stdin buffer limit of kubectl exec -i)
+          kubectl cp /tmp/collection.json ${POD}:/tmp/collection.json -c newman
+          kubectl cp /tmp/environment.json ${POD}:/tmp/environment.json -c newman
 
           # For aux tests the Newman sidecar is in the aux-hopper pod, not the main hopper pod.
           # Override hopperUrl so it resolves via the Kubernetes service DNS name.
@@ -161,7 +165,7 @@ jobs:
             HOPPER_OVERRIDE="--env-var hopperUrl=http://hopper:8080/v3"
           fi
 
-          kubectl exec deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} -c newman -- \
+          kubectl exec deploy/${DEPLOY} -c newman -- \
             newman run /tmp/collection.json \
               -e /tmp/environment.json \
               $HOPPER_OVERRIDE \
