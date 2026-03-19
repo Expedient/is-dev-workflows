@@ -151,14 +151,21 @@ jobs:
       - name: Run Newman tests
         run: |
           DEPLOY="${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}}"
-          POD=$(kubectl get pod -l app=${DEPLOY} -o jsonpath='{.items[0].metadata.name}')
+
+          # Select the correct pod using stable labels.
+          # Aux pods have app-type=aux; main/asset pods have app=${{inputs.APPLICATION}} without that label.
+          if [ -n "${{inputs.APPLICATION_PREFIX}}" ]; then
+            POD=$(kubectl get pod -l app-type=aux -o jsonpath='{.items[0].metadata.name}')
+          else
+            POD=$(kubectl get pod -l app=${{inputs.APPLICATION}},app-type!=aux -o jsonpath='{.items[0].metadata.name}')
+          fi
 
           # Copy test files into the Newman sidecar container using kubectl cp
           # (avoids the ~32KB stdin buffer limit of kubectl exec -i)
           kubectl cp /tmp/collection.json ${POD}:/tmp/collection.json -c newman
           kubectl cp /tmp/environment.json ${POD}:/tmp/environment.json -c newman
 
-          # For aux tests the Newman sidecar is in the aux-hopper pod, not the main hopper pod.
+          # For aux tests the Newman sidecar is in the aux-hopper pod.
           # Override hopperUrl so it resolves via the Kubernetes service DNS name.
           HOPPER_OVERRIDE=""
           if [ -n "${{inputs.APPLICATION_PREFIX}}" ]; then

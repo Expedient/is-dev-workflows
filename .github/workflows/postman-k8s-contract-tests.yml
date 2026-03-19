@@ -104,9 +104,29 @@ jobs:
         if: failure() && inputs.ENABLE_DEBUG_ON_FAILURE
         with:
           wait-timeout-minutes: 5
+      - name: Build Postman environment
+        run: |
+          cd ${{inputs.APPLICATION}}/postman/scripts
+          npm install
+          node build-environment.mjs \
+            "../environments/${{inputs.APPLICATION}}.environment.yaml" \
+            /tmp/environment.json
       - name: Run contract tests
         run: |
           cd ${{inputs.APPLICATION}}
+
+          # Fetch the contract tests JSON from the running hopper API via the test-fetcher sidecar
           kubectl exec deploy/${{inputs.APPLICATION}} -c test-fetcher -- wget -O /contract-tests/contract-tests.json http://localhost:8080/contract-tests
-          tar cf - postman/ | kubectl exec -i deploy/${{inputs.APPLICATION}} -c postman -- `mkdir -p /etc/postman && tar xf - -C /etc/postman`
-          kubectl exec deploy/${{inputs.APPLICATION}} -c postman -- postman run /contract-tests/contract-tests.json --folder 'Contract Tests' -e postman/environments/${{inputs.APPLICATION}}.environment.yaml --verbose
+
+          # Copy the contract tests JSON to the runner, then copy all files into the newman container
+          # using kubectl cp to avoid the ~32KB stdin buffer limit of kubectl exec -i
+          POD=$(kubectl get pod -l app=${{inputs.APPLICATION}},app-type!=aux -o jsonpath='{.items[0].metadata.name}')
+          kubectl cp ${POD}:/contract-tests/contract-tests.json /tmp/contract-tests.json -c test-fetcher
+          kubectl cp /tmp/contract-tests.json ${POD}:/tmp/contract-tests.json -c newman
+          kubectl cp /tmp/environment.json ${POD}:/tmp/environment.json -c newman
+
+          kubectl exec deploy/${{inputs.APPLICATION}} -c newman -- \
+            newman run /tmp/contract-tests.json \
+              --folder 'Contract Tests' \
+              -e /tmp/environment.json \
+              --verbose
