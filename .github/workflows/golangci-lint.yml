@@ -5,6 +5,9 @@ on:
       GO_VERSION:
         default: '1.22'
         type: string
+      GOLANGCI_LINT_VERSION:
+        default: 'v1.64.6'
+        type: string
     secrets:
       IS_GITHUB_USERNAME:
         required: true
@@ -33,5 +36,5 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.64.6
+          version: ${{ inputs.GOLANGCI_LINT_VERSION }}
           args: --timeout=3m
