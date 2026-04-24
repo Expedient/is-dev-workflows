@@ -33,8 +33,15 @@ jobs:
         with:
           go-version: ${{ inputs.GO_VERSION }}
       - uses: actions/checkout@v3
-      - name: golangci-lint
+      - name: golangci-lint (v1)
+        if: startsWith(inputs.GOLANGCI_LINT_VERSION, 'v1')
         uses: golangci/golangci-lint-action@v6
+        with:
+          version: ${{ inputs.GOLANGCI_LINT_VERSION }}
+          args: --timeout=3m
+      - name: golangci-lint (v2)
+        if: startsWith(inputs.GOLANGCI_LINT_VERSION, 'v2')
+        uses: golangci/golangci-lint-action@v7
         with:
           version: ${{ inputs.GOLANGCI_LINT_VERSION }}
           args: --timeout=3m
