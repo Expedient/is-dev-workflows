@@ -92,17 +92,17 @@ jobs:
     runs-on: ubuntu-24.04
     name: Functional Tests
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           path: ${{inputs.APPLICATION}}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           repository: ${{inputs.KUBERNETES_REPO}}
           ref: ${{inputs.KUBERNETES_REPO_REF}}
           token: ${{secrets.IS_CICD_GITHUB_ACTION_TOKEN}}
           path: kubernetes
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.9.0
+        uses: helm/kind-action@v1.14.0
       - name: Check kind
         run: |
           kubectl cluster-info
@@ -134,6 +134,8 @@ jobs:
         run: |
           kubectl logs deploy/${{inputs.APPLICATION_PREFIX}}${{inputs.APPLICATION}} --all-containers
       - name: Setup debug session on failure
+        # node16: no node20+ upstream release — still emits the Node.js deprecation
+        # warning, but only runs on failure when debugging is enabled. See DEV-6381.
         uses: lhotari/action-upterm@v1
         if: failure() && inputs.ENABLE_DEBUG_ON_FAILURE
         with:

@@ -15,8 +15,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v5
     - name: Sync
+      # node12: unmaintained, no node20+ upstream release — still emits the Node.js
+      # deprecation warning. Needs replacement with a maintained action. See DEV-6381.
       uses: jneate/postman-collection-action@v1
       with:
         postmanApiKey: ${{ secrets.POSTMAN_API_KEY }}
