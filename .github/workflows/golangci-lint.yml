@@ -32,19 +32,22 @@ jobs:
         run: |
           git config --global url."https://${USERNAME}:${TOKEN}@github.com".insteadOf "https://github.com" && \
           export GOPRIVATE="github.com/expedient"
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ inputs.GO_VERSION }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: golangci-lint (v1)
         if: startsWith(inputs.GOLANGCI_LINT_VERSION, 'v1')
+        # node20: v6 is the last golangci-lint-action major that supports golangci-lint
+        # v1.x. Moving to a node24 action (v9) requires migrating consumers to golangci-lint
+        # v2 config, so this branch still emits the Node.js deprecation warning. See DEV-6381.
         uses: golangci/golangci-lint-action@v6
         with:
           version: ${{ inputs.GOLANGCI_LINT_VERSION }}
           args: --timeout=${{ inputs.GOLANGCI_LINT_TIMEOUT }}
       - name: golangci-lint (v2)
         if: startsWith(inputs.GOLANGCI_LINT_VERSION, 'v2')
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ inputs.GOLANGCI_LINT_VERSION }}
           args: --timeout=${{ inputs.GOLANGCI_LINT_TIMEOUT }}
