@@ -6,7 +6,11 @@ on:
         default: '1.22'
         type: string
       GOLANGCI_LINT_VERSION:
-        default: 'v1.64.6'
+        # Default to golangci-lint v2 so unpinned consumers run on the v2 code path
+        # (golangci-lint-action@v9, Node.js 24). Repos that need a different version
+        # can still override this input. NOTE: consumers must be on a v2-format
+        # .golangci.yaml before relying on this default. See DEV-6381.
+        default: 'v2.11.4'
         type: string
       GOLANGCI_LINT_TIMEOUT:
         default: '3m'
