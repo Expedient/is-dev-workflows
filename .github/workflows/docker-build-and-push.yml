@@ -15,11 +15,16 @@ on:
         required: false
         default: "docker.io"
         type: string
+      use_github_token_auth:
+        description: "Authenticate to the registry with the per-repo GITHUB_TOKEN instead of IS_DOCKER_HUB_* creds. Requires 'packages: write' on the calling job. Use for ghcr.io."
+        required: false
+        default: false
+        type: boolean
     secrets:
       IS_DOCKER_HUB_USERNAME:
-        required: true
+        required: false
       IS_DOCKER_HUB_PASSWORD:
-        required: true
+        required: false
       build_args:
         required: false
     outputs:
@@ -38,12 +43,12 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Login to Docker Hub
+      - name: Login to registry
         uses: docker/login-action@v4
         with:
           registry: ${{ inputs.registry }}
-          username: ${{ secrets.IS_DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.IS_DOCKER_HUB_PASSWORD }}
+          username: ${{ inputs.use_github_token_auth && github.actor || secrets.IS_DOCKER_HUB_USERNAME }}
+          password: ${{ inputs.use_github_token_auth && github.token || secrets.IS_DOCKER_HUB_PASSWORD }}
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v4
