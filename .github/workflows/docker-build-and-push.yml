@@ -54,6 +54,8 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
+          provenance: false
+          sbom: false
           tags: ${{ inputs.tags }}
           build-args: ${{ secrets.build_args }}
       - name: Image digest
