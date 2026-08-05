@@ -1,0 +1,54 @@
+name: Notify Dependent PRs
+on:
+  workflow_call:
+    inputs:
+      SOURCE_REPO:
+        description: 'Bare repo name (within the Expedient org) whose deploy just completed'
+        required: true
+        type: string
+      DEPENDENT_REPO:
+        description: 'Bare repo name (within the Expedient org) to search for PRs blocked on SOURCE_REPO'
+        required: true
+        type: string
+      ENVIRONMENT:
+        description: 'Environment name used in the comment text, e.g. prod'
+        required: true
+        type: string
+    secrets:
+      IS_CICD_GITHUB_ACTION_TOKEN:
+        required: true
+
+jobs:
+  notify-dependent-prs:
+    runs-on: ubuntu-24.04
+    name: notify-dependent-prs
+    env:
+      GH_TOKEN: ${{ secrets.IS_CICD_GITHUB_ACTION_TOKEN }}
+      SOURCE_REPO: Expedient/${{ inputs.SOURCE_REPO }}
+      DEPENDENT_REPO: Expedient/${{ inputs.DEPENDENT_REPO }}
+    steps:
+      - name: Resolve merged PR number for this commit
+        id: source_pr
+        run: |
+          PR_NUMBER=$(gh api "repos/$SOURCE_REPO/commits/${{ github.sha }}/pulls" --jq '.[0].number')
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
+            echo "No PR found for commit ${{ github.sha }} in $SOURCE_REPO; nothing to notify."
+            echo "number=" >> "$GITHUB_OUTPUT"
+          else
+            echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find and comment on dependent PRs
+        if: steps.source_pr.outputs.number != ''
+        run: |
+          PR_NUMBER="${{ steps.source_pr.outputs.number }}"
+          SOURCE_REPO_NAME="${{ inputs.SOURCE_REPO }}"
+          MATCH_PATTERN="Expedient/${SOURCE_REPO_NAME}#${PR_NUMBER}\\b|github\\.com/Expedient/${SOURCE_REPO_NAME}/pull/${PR_NUMBER}\\b"
+
+          gh pr list --repo "$DEPENDENT_REPO" --label "pr/hold-merge" --state open --json number,body \
+            | jq -r --arg pat "$MATCH_PATTERN" '.[] | select(.body != null and (.body | test($pat; "i"))) | .number' \
+            | while read -r number; do
+                echo "Commenting on $DEPENDENT_REPO#$number"
+                gh pr comment "$number" --repo "$DEPENDENT_REPO" --body \
+                  "Expedient/${SOURCE_REPO_NAME}#${PR_NUMBER} deployed to ${{ inputs.ENVIRONMENT }} (commit ${{ github.sha }}). This dependency might now be unblocked — please re-check before merging."
+              done
